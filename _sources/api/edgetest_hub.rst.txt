@@ -1,0 +1,19 @@
+edgetest\_hub package
+=====================
+
+Submodules
+----------
+
+
+.. automodule:: edgetest_hub.plugin
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: edgetest_hub
+   :members:
+   :undoc-members:
+   :show-inheritance:
