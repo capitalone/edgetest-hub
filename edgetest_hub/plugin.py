@@ -29,7 +29,7 @@ def configure_branch(conf: Dict):
     None
     """
     git_repo_url = (
-        f"https://{os.environ[GIT_TOKEN_ENVNAME]}@github.com/"
+        f"https://{os.environ[GIT_TOKEN_ENVNAME]}@{conf['hub']['git_url']}/"
         f"{conf['hub']['git_repo_org']}/{conf['hub']['git_repo_name']}.git"
     )
     out, _ = _run_command(
@@ -46,7 +46,7 @@ def configure_branch(conf: Dict):
         "--global",
         "--add",
         "hub.host",
-        "github.com",
+        conf["hub"]["git_url"],
     )
 
     try:  # delete any remote updater_branch
@@ -155,6 +155,11 @@ def addoption(schema: Schema):
         {
             "type": "dict",
             "schema": {
+                "git_url": {
+                    "type": "string",
+                    "coerce": "strip",
+                    "default": "github.com",
+                },
                 "git_repo_org": {
                     "type": "string",
                     "coerce": "strip",

@@ -31,6 +31,20 @@ command =
     pytest tests -m 'not integration'
 """
 
+
+CFG_HUB_URL = """
+[edgetest.hub]
+git_url = mycustomgit.com
+git_repo_org = test-org
+git_repo_name = test-repo
+pr_reviewers = abc123,efg456
+[edgetest.envs.myenv]
+upgrade =
+    myupgrade
+command =
+    pytest tests -m 'not integration'
+"""
+
 PIP_LIST = """
 [{"name": "myupgrade", "version": "0.2.0"}]
 """
@@ -214,3 +228,60 @@ def test_hub_withtoken_withpr(mock_popen, mock_cpopen, mock_builder, mock_run_co
 
     assert mock_run_command.called is True
     assert mock_run_command.mock_calls == expected_calls_with_pr
+
+
+@patch.dict(os.environ, {"GITHUB_TOKEN": "abcd1234"})
+@patch("edgetest_hub.plugin._run_command", autospec=True)
+@patch("edgetest.lib.EnvBuilder", autospec=True)
+@patch("edgetest.core.Popen", autospec=True)
+@patch("edgetest.utils.Popen", autospec=True)
+def test_hub_custom_url(mock_popen, mock_cpopen, mock_builder, mock_run_command):
+    """Test hub and git in setting up PR of changes."""
+    mock_popen.return_value.communicate.return_value = (PIP_LIST, "error")
+    type(mock_popen.return_value).returncode = PropertyMock(return_value=0)
+    mock_cpopen.return_value.communicate.return_value = ("output", "error")
+    type(mock_cpopen.return_value).returncode = PropertyMock(return_value=0)
+
+    mock_run_command.side_effect = [(None, None)] * 10  # 10 calls
+    expected_calls_no_pr = [
+        call("git", "config", "user.name", "Jenkins"),
+        call("git", "config", "user.email", "noreply@capitalone.com"),
+        call(
+            "git",
+            "remote",
+            "set-url",
+            "origin",
+            "https://abcd1234@mycustomgit.com/test-org/test-repo.git",
+        ),
+        call("git", "config", "--global", "hub.protocol", "https"),
+        call(
+            "git",
+            "config",
+            "--global",
+            "--add",
+            "hub.host",
+            "mycustomgit.com",
+        ),
+        call(
+            "git",
+            "push",
+            "https://abcd1234@mycustomgit.com/test-org/test-repo.git",
+            "--delete",
+            "dep-updates",
+        ),
+        call("git", "branch", "-D", "dep-updates"),
+        call("git", "clean", "-fd"),
+        call("git", "checkout", "-b", "dep-updates", "develop"),
+        call("git", "diff-index", "--quiet", "HEAD"),
+    ]
+
+    runner = CliRunner()
+
+    with runner.isolated_filesystem() as loc:
+        with open("setup.cfg", "w") as outfile:
+            outfile.write(CFG_HUB_URL)
+
+        result = runner.invoke(cli, ["--config=setup.cfg"])
+
+    assert mock_run_command.called is True
+    assert mock_run_command.mock_calls == expected_calls_no_pr
