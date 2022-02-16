@@ -41,6 +41,7 @@ To use this plugin, add an ``edgetest.hub`` section to your configuration:
 
 ```ini
 [edgetest.hub]
+git_url = github.com  # optional
 git_repo_org = org-name
 git_repo_name = repo-name
 git_username = Jenkins  # optional
