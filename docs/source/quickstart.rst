@@ -29,6 +29,7 @@ to your configuration:
 .. code-block:: ini
 
     [edgetest.hub]
+    git_url = github.com  # optional
     git_repo_org = org-name
     git_repo_name = repo-name
     git_username = Jenkins  # optional
