@@ -1,6 +1,6 @@
 """Package initialization."""
 
-__version__ = "2022.2.0"
+__version__ = "2022.4.0"
 
 __title__ = "edgetest-hub"
 __description__ = "Edgetest hub plugin"
