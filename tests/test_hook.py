@@ -285,3 +285,40 @@ def test_hub_custom_url(mock_popen, mock_cpopen, mock_builder, mock_run_command)
 
     assert mock_run_command.called is True
     assert mock_run_command.mock_calls == expected_calls_no_pr
+
+
+@patch.dict(os.environ, {"GITHUB_TOKEN": "abcd1234"})
+@patch("edgetest_hub.plugin._run_command", autospec=True)
+@patch("edgetest.lib.EnvBuilder", autospec=True)
+@patch("edgetest.core.Popen", autospec=True)
+@patch("edgetest.utils.Popen", autospec=True)
+def test_hub_issue(mock_popen, mock_cpopen, mock_builder, mock_run_command):
+    """Test hub and opening of issue."""
+    mock_popen.return_value.communicate.return_value = (PIP_LIST, "error")
+    type(mock_popen.return_value).returncode = PropertyMock(return_value=0)
+    mock_cpopen.return_value.communicate.return_value = ("output", "error")
+    type(mock_cpopen.return_value).returncode = PropertyMock(return_value=0)
+
+    runner = CliRunner()
+
+    with runner.isolated_filesystem() as loc:
+        with open("setup.cfg", "w") as outfile:
+            outfile.write(CFG_HUB)
+
+        result = runner.invoke(cli, ["--config=setup.cfg", "--notest"])
+
+    assert result.exit_code == 1
+    expected_call = [
+        call(
+            "hub",
+            "issue",
+            "create",
+            "--message",
+            "[EDGETEST] Issue updating dependencies",
+            "--message",
+            "Edgetest ran, but there were some issues with the tests passing. Edgetest created an issue to let you know.",
+            "--message",
+            "| Environment   | Passing tests   | Upgraded packages   | Package version   |\n|---------------|-----------------|---------------------|-------------------|\n| myenv         | False           | myupgrade           | 0.2.0             |",
+        )
+    ]
+    mock_run_command.assert_has_calls(expected_call)

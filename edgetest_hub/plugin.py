@@ -4,6 +4,7 @@ from typing import Dict, List
 
 import pluggy
 from edgetest.logger import get_logger
+from edgetest.report import gen_report
 from edgetest.schema import Schema
 from edgetest.utils import _run_command
 
@@ -141,6 +142,35 @@ def push_branch(conf: Dict):
         LOG.info("Submitting PR.")
 
 
+def create_issue(message: str):
+    """Create an issue with Hub.
+
+    Parameters
+    ----------
+    message: str
+
+
+    Returns
+    -------
+    None
+    """
+    try:
+        out, _ = _run_command(
+            HUB_COMMAND,
+            "issue",
+            "create",
+            "--message",
+            "[EDGETEST] Issue updating dependencies",
+            "--message",
+            "Edgetest ran, but there were some issues with the tests passing. Edgetest created an issue to let you know.",  # noqa: E501
+            "--message",
+            message,
+        )
+        LOG.info("Creating issue.")
+    except RuntimeError:
+        LOG.info("There was a problem creating an Issue.")
+
+
 @hookimpl
 def addoption(schema: Schema):
     """Add an email global configuration option.
@@ -209,5 +239,8 @@ def post_run_hook(testers: List, conf: Dict):
         if conf.get("hub"):
             configure_branch(conf)
             push_branch(conf)
+    elif testers[-1].status is False and GIT_TOKEN_ENVNAME in os.environ:
+        report = gen_report(testers, output_type="github")
+        create_issue(report)
     else:
         LOG.info("Environment variable GITHUB_TOKEN not found. Skipping Hub plugin.")
