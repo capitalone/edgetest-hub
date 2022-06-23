@@ -1,4 +1,5 @@
 """Test the hub hook."""
+import logging
 import os
 from pathlib import Path
 from unittest.mock import PropertyMock, call, patch
@@ -9,7 +10,7 @@ from edgetest.interface import cli
 from edgetest.schema import EdgetestValidator, Schema
 from edgetest.utils import parse_cfg
 
-from edgetest_hub.plugin import addoption
+from edgetest_hub.plugin import addoption, create_issue
 
 CFG = """
 [edgetest.envs.myenv]
@@ -322,3 +323,19 @@ def test_hub_issue(mock_popen, mock_cpopen, mock_builder, mock_run_command):
         )
     ]
     mock_run_command.assert_has_calls(expected_call)
+
+
+@patch("edgetest_hub.plugin._run_command", autospec=True)
+def test_hub_issue_logging_and_exception(mock_run_command, caplog):
+    """Test hub and opening of issue."""
+    mock_run_command.return_value = ("", "")
+    with caplog.at_level(logging.INFO):
+        create_issue("test")
+    assert mock_run_command.called
+    assert "Creating issue." in caplog.text
+
+    mock_run_command.side_effect = RuntimeError()
+    with caplog.at_level(logging.INFO):
+        create_issue("test")
+    assert mock_run_command.called
+    assert "There was a problem creating an Issue." in caplog.text
