@@ -180,7 +180,10 @@ def addoption(schema: Schema):
     schema : Schema
         The schema class.
     """
-    to_bool = lambda v: v.lower() in ["true", "1"]
+
+    def to_bool(x):
+        return x.lower() in ["true", "1"]
+
     schema.add_globaloption(
         "hub",
         {
