@@ -240,13 +240,12 @@ def addoption(schema: Schema):
 def post_run_hook(testers: List, conf: Dict):
     """Invoke hub after the testing is complete."""
     if GIT_TOKEN_ENVNAME in os.environ:
-        conf_hub = conf.get("hub")
         if testers[-1].status is True:
-            if conf_hub:
+            if conf.get("hub"):
                 configure_branch(conf)
                 push_branch(conf)
         else:  # testers[-1].status is False
-            if conf_hub["open_issue_on_fail"] is True:
+            if conf["hub"]["open_issue_on_fail"] is True:
                 report = gen_report(testers, output_type="github")
                 create_issue(report)
             else:
