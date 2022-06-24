@@ -20,11 +20,12 @@ command =
     pytest tests -m 'not integration'
 """
 
-CFG_HUB = """
+CFG_HUB_ISSUE_TRUE = """
 [edgetest.hub]
 git_repo_org = test-org
 git_repo_name = test-repo
 pr_reviewers = abc123,efg456
+open_issue_on_fail = True
 [edgetest.envs.myenv]
 upgrade =
     myupgrade
@@ -32,6 +33,18 @@ command =
     pytest tests -m 'not integration'
 """
 
+CFG_HUB_ISSUE_FALSE = """
+[edgetest.hub]
+git_repo_org = test-org
+git_repo_name = test-repo
+pr_reviewers = abc123,efg456
+open_issue_on_fail = False
+[edgetest.envs.myenv]
+upgrade =
+    myupgrade
+command =
+    pytest tests -m 'not integration'
+"""
 
 CFG_HUB_URL = """
 [edgetest.hub]
@@ -39,6 +52,7 @@ git_url = mycustomgit.com
 git_repo_org = test-org
 git_repo_name = test-repo
 pr_reviewers = abc123,efg456
+open_issue_on_fail = True
 [edgetest.envs.myenv]
 upgrade =
     myupgrade
@@ -61,7 +75,7 @@ TABLE_OUTPUT = """
 """
 
 
-@pytest.mark.parametrize("config", [CFG, CFG_HUB])
+@pytest.mark.parametrize("config", [CFG, CFG_HUB_ISSUE_TRUE])
 def test_addoption(config, tmpdir):
     """Test the addoption hook."""
     location = tmpdir.mkdir("mylocation")
@@ -93,7 +107,7 @@ def test_hub_notoken(mock_popen, mock_cpopen, mock_builder, mock_run_command):
 
     with runner.isolated_filesystem() as loc:
         with open("setup.cfg", "w") as outfile:
-            outfile.write(CFG_HUB)
+            outfile.write(CFG_HUB_ISSUE_TRUE)
 
         result = runner.invoke(cli, ["--config=setup.cfg"])
 
@@ -150,7 +164,7 @@ def test_hub_withtoken_nopr(mock_popen, mock_cpopen, mock_builder, mock_run_comm
 
     with runner.isolated_filesystem() as loc:
         with open("setup.cfg", "w") as outfile:
-            outfile.write(CFG_HUB)
+            outfile.write(CFG_HUB_ISSUE_TRUE)
 
         result = runner.invoke(cli, ["--config=setup.cfg"])
 
@@ -223,7 +237,7 @@ def test_hub_withtoken_withpr(mock_popen, mock_cpopen, mock_builder, mock_run_co
 
     with runner.isolated_filesystem() as loc:
         with open("setup.cfg", "w") as outfile:
-            outfile.write(CFG_HUB)
+            outfile.write(CFG_HUB_ISSUE_TRUE)
 
         result = runner.invoke(cli, ["--config=setup.cfg"])
 
@@ -304,11 +318,10 @@ def test_hub_issue(mock_popen, mock_cpopen, mock_builder, mock_run_command):
 
     with runner.isolated_filesystem() as loc:
         with open("setup.cfg", "w") as outfile:
-            outfile.write(CFG_HUB)
+            outfile.write(CFG_HUB_ISSUE_TRUE)
 
         result = runner.invoke(cli, ["--config=setup.cfg", "--notest"])
 
-    assert result.exit_code == 1
     expected_call = [
         call(
             "hub",
@@ -323,6 +336,29 @@ def test_hub_issue(mock_popen, mock_cpopen, mock_builder, mock_run_command):
         )
     ]
     mock_run_command.assert_has_calls(expected_call)
+
+
+@patch.dict(os.environ, {"GITHUB_TOKEN": "abcd1234"})
+@patch("edgetest_hub.plugin._run_command", autospec=True)
+@patch("edgetest.lib.EnvBuilder", autospec=True)
+@patch("edgetest.core.Popen", autospec=True)
+@patch("edgetest.utils.Popen", autospec=True)
+def test_hub_issue_false(mock_popen, mock_cpopen, mock_builder, mock_run_command):
+    """Test hub and opening of issue when the flag is False"""
+    mock_popen.return_value.communicate.return_value = (PIP_LIST, "error")
+    type(mock_popen.return_value).returncode = PropertyMock(return_value=0)
+    mock_cpopen.return_value.communicate.return_value = ("output", "error")
+    type(mock_cpopen.return_value).returncode = PropertyMock(return_value=0)
+
+    runner = CliRunner()
+
+    with runner.isolated_filesystem() as loc:
+        with open("setup.cfg", "w") as outfile:
+            outfile.write(CFG_HUB_ISSUE_FALSE)
+
+        result = runner.invoke(cli, ["--config=setup.cfg", "--notest"])
+
+    mock_run_command.assert_not_called()
 
 
 @patch("edgetest_hub.plugin._run_command", autospec=True)

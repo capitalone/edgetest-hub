@@ -180,6 +180,7 @@ def addoption(schema: Schema):
     schema : Schema
         The schema class.
     """
+    to_bool = lambda v: v.lower() in ["true", "1"]
     schema.add_globaloption(
         "hub",
         {
@@ -225,6 +226,11 @@ def addoption(schema: Schema):
                     "coerce": "strip",
                     "required": True,
                 },
+                "open_issue_on_fail": {
+                    "type": "boolean",
+                    "coerce": to_bool,
+                    "required": True,
+                },
             },
         },
     )
@@ -233,14 +239,17 @@ def addoption(schema: Schema):
 @hookimpl
 def post_run_hook(testers: List, conf: Dict):
     """Invoke hub after the testing is complete."""
-    if (
-        testers[-1].status and GIT_TOKEN_ENVNAME in os.environ
-    ):  # skip is token not available
-        if conf.get("hub"):
-            configure_branch(conf)
-            push_branch(conf)
-    elif testers[-1].status is False and GIT_TOKEN_ENVNAME in os.environ:
-        report = gen_report(testers, output_type="github")
-        create_issue(report)
+    if GIT_TOKEN_ENVNAME in os.environ:
+        conf_hub = conf.get("hub")
+        if testers[-1].status is True:
+            if conf_hub:
+                configure_branch(conf)
+                push_branch(conf)
+        else:  # testers[-1].status is False
+            if conf_hub["open_issue_on_fail"] is True:
+                report = gen_report(testers, output_type="github")
+                create_issue(report)
+            else:
+                LOG.info("Skipping Creating an Issue.")
     else:
         LOG.info("Environment variable GITHUB_TOKEN not found. Skipping Hub plugin.")
