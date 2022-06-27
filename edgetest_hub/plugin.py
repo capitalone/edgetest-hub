@@ -248,10 +248,13 @@ def post_run_hook(testers: List, conf: Dict):
                 configure_branch(conf)
                 push_branch(conf)
         else:  # testers[-1].status is False
-            if conf["hub"]["open_issue_on_fail"] is True:
-                report = gen_report(testers, output_type="github")
-                create_issue(report)
+            if conf.get("hub"):
+                if conf["hub"]["open_issue_on_fail"] is True:
+                    report = gen_report(testers, output_type="github")
+                    create_issue(report)
+                else:
+                    LOG.info("Skipping Creating an Issue.")
             else:
-                LOG.info("Skipping Creating an Issue.")
+                LOG.info("Hub plugin configuration not found. Skipping Hub plugin")
     else:
         LOG.info("Environment variable GITHUB_TOKEN not found. Skipping Hub plugin.")
