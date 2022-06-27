@@ -8,8 +8,8 @@ cerberus==1.3.4
     # via edgetest
 click==8.1.2
     # via edgetest
-edgetest==2022.4.0
-    # via edgetest-hub (setup.cfg)
+edgetest==2022.6.0
+    # via edgetest-hub (setup.py)
 packaging==21.3
     # via edgetest
 pluggy==1.0.0
