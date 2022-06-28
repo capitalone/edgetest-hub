@@ -1,13 +1,13 @@
 <!doctype html>
-<html class="no-js">
+<html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
-    <meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
+    <meta name="generator" content="sphinx-5.0.2, furo 2022.06.21"/>
         <title>edgetest_hub.plugin - Edgetest hub plugin documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
@@ -185,7 +185,8 @@
           </svg>
           <span>Back to top</span>
         </a>
-        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -200,26 +201,27 @@
         </div>
         <article role="main">
           <h1>Source code for edgetest_hub.plugin</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Plugin for hub functionality with ``edgetest``."""</span>
+<span></span><span class="sd">&quot;&quot;&quot;Plugin for hub functionality with ``edgetest``.&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
 
 <span class="kn">import</span> <span class="nn">pluggy</span>
 <span class="kn">from</span> <span class="nn">edgetest.logger</span> <span class="kn">import</span> <span class="n">get_logger</span>
+<span class="kn">from</span> <span class="nn">edgetest.report</span> <span class="kn">import</span> <span class="n">gen_report</span>
 <span class="kn">from</span> <span class="nn">edgetest.schema</span> <span class="kn">import</span> <span class="n">Schema</span>
 <span class="kn">from</span> <span class="nn">edgetest.utils</span> <span class="kn">import</span> <span class="n">_run_command</span>
 
 <span class="n">LOG</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<span class="n">hookimpl</span> <span class="o">=</span> <span class="n">pluggy</span><span class="o">.</span><span class="n">HookimplMarker</span><span class="p">(</span><span class="s2">"edgetest"</span><span class="p">)</span>
+<span class="n">hookimpl</span> <span class="o">=</span> <span class="n">pluggy</span><span class="o">.</span><span class="n">HookimplMarker</span><span class="p">(</span><span class="s2">&quot;edgetest&quot;</span><span class="p">)</span>
 
-<span class="n">HUB_COMMAND</span> <span class="o">=</span> <span class="s2">"hub"</span>
-<span class="n">GIT_COMMAND</span> <span class="o">=</span> <span class="s2">"git"</span>
-<span class="n">GIT_TOKEN_ENVNAME</span> <span class="o">=</span> <span class="s2">"GITHUB_TOKEN"</span>
+<span class="n">HUB_COMMAND</span> <span class="o">=</span> <span class="s2">&quot;hub&quot;</span>
+<span class="n">GIT_COMMAND</span> <span class="o">=</span> <span class="s2">&quot;git&quot;</span>
+<span class="n">GIT_TOKEN_ENVNAME</span> <span class="o">=</span> <span class="s2">&quot;GITHUB_TOKEN&quot;</span>
 
 
 <div class="viewcode-block" id="configure_branch"><a class="viewcode-back" href="../../api/edgetest_hub.html#edgetest_hub.plugin.configure_branch">[docs]</a><span class="k">def</span> <span class="nf">configure_branch</span><span class="p">(</span><span class="n">conf</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
-    <span class="sd">"""Configure the git and the branch before we submit a PR with hub.</span>
+    <span class="sd">&quot;&quot;&quot;Configure the git and the branch before we submit a PR with hub.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -229,67 +231,67 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    None</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">git_repo_url</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="sa">f</span><span class="s2">"https://</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">GIT_TOKEN_ENVNAME</span><span class="p">]</span><span class="si">}</span><span class="s2">@</span><span class="si">{</span><span class="n">conf</span><span class="p">[</span><span class="s1">'hub'</span><span class="p">][</span><span class="s1">'git_url'</span><span class="p">]</span><span class="si">}</span><span class="s2">/"</span>
-        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">conf</span><span class="p">[</span><span class="s1">'hub'</span><span class="p">][</span><span class="s1">'git_repo_org'</span><span class="p">]</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">conf</span><span class="p">[</span><span class="s1">'hub'</span><span class="p">][</span><span class="s1">'git_repo_name'</span><span class="p">]</span><span class="si">}</span><span class="s2">.git"</span>
+        <span class="sa">f</span><span class="s2">&quot;https://</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">GIT_TOKEN_ENVNAME</span><span class="p">]</span><span class="si">}</span><span class="s2">@</span><span class="si">{</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;hub&#39;</span><span class="p">][</span><span class="s1">&#39;git_url&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">/&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;hub&#39;</span><span class="p">][</span><span class="s1">&#39;git_repo_org&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;hub&#39;</span><span class="p">][</span><span class="s1">&#39;git_repo_name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">.git&quot;</span>
     <span class="p">)</span>
     <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_run_command</span><span class="p">(</span>
-        <span class="n">GIT_COMMAND</span><span class="p">,</span> <span class="s2">"config"</span><span class="p">,</span> <span class="s2">"user.name"</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="s2">"hub"</span><span class="p">][</span><span class="s2">"git_username"</span><span class="p">]</span>
+        <span class="n">GIT_COMMAND</span><span class="p">,</span> <span class="s2">&quot;config&quot;</span><span class="p">,</span> <span class="s2">&quot;user.name&quot;</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="s2">&quot;hub&quot;</span><span class="p">][</span><span class="s2">&quot;git_username&quot;</span><span class="p">]</span>
     <span class="p">)</span>
     <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_run_command</span><span class="p">(</span>
-        <span class="n">GIT_COMMAND</span><span class="p">,</span> <span class="s2">"config"</span><span class="p">,</span> <span class="s2">"user.email"</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="s2">"hub"</span><span class="p">][</span><span class="s2">"git_useremail"</span><span class="p">]</span>
+        <span class="n">GIT_COMMAND</span><span class="p">,</span> <span class="s2">&quot;config&quot;</span><span class="p">,</span> <span class="s2">&quot;user.email&quot;</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="s2">&quot;hub&quot;</span><span class="p">][</span><span class="s2">&quot;git_useremail&quot;</span><span class="p">]</span>
     <span class="p">)</span>
-    <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_run_command</span><span class="p">(</span><span class="n">GIT_COMMAND</span><span class="p">,</span> <span class="s2">"remote"</span><span class="p">,</span> <span class="s2">"set-url"</span><span class="p">,</span> <span class="s2">"origin"</span><span class="p">,</span> <span class="n">git_repo_url</span><span class="p">)</span>
-    <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_run_command</span><span class="p">(</span><span class="n">GIT_COMMAND</span><span class="p">,</span> <span class="s2">"config"</span><span class="p">,</span> <span class="s2">"--global"</span><span class="p">,</span> <span class="s2">"hub.protocol"</span><span class="p">,</span> <span class="s2">"https"</span><span class="p">)</span>
+    <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_run_command</span><span class="p">(</span><span class="n">GIT_COMMAND</span><span class="p">,</span> <span class="s2">&quot;remote&quot;</span><span class="p">,</span> <span class="s2">&quot;set-url&quot;</span><span class="p">,</span> <span class="s2">&quot;origin&quot;</span><span class="p">,</span> <span class="n">git_repo_url</span><span class="p">)</span>
+    <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_run_command</span><span class="p">(</span><span class="n">GIT_COMMAND</span><span class="p">,</span> <span class="s2">&quot;config&quot;</span><span class="p">,</span> <span class="s2">&quot;--global&quot;</span><span class="p">,</span> <span class="s2">&quot;hub.protocol&quot;</span><span class="p">,</span> <span class="s2">&quot;https&quot;</span><span class="p">)</span>
     <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_run_command</span><span class="p">(</span>
         <span class="n">GIT_COMMAND</span><span class="p">,</span>
-        <span class="s2">"config"</span><span class="p">,</span>
-        <span class="s2">"--global"</span><span class="p">,</span>
-        <span class="s2">"--add"</span><span class="p">,</span>
-        <span class="s2">"hub.host"</span><span class="p">,</span>
-        <span class="n">conf</span><span class="p">[</span><span class="s2">"hub"</span><span class="p">][</span><span class="s2">"git_url"</span><span class="p">],</span>
+        <span class="s2">&quot;config&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--global&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--add&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;hub.host&quot;</span><span class="p">,</span>
+        <span class="n">conf</span><span class="p">[</span><span class="s2">&quot;hub&quot;</span><span class="p">][</span><span class="s2">&quot;git_url&quot;</span><span class="p">],</span>
     <span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>  <span class="c1"># delete any remote updater_branch</span>
         <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_run_command</span><span class="p">(</span>
-            <span class="n">GIT_COMMAND</span><span class="p">,</span> <span class="s2">"push"</span><span class="p">,</span> <span class="n">git_repo_url</span><span class="p">,</span> <span class="s2">"--delete"</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="s2">"hub"</span><span class="p">][</span><span class="s2">"updater_branch"</span><span class="p">]</span>
+            <span class="n">GIT_COMMAND</span><span class="p">,</span> <span class="s2">&quot;push&quot;</span><span class="p">,</span> <span class="n">git_repo_url</span><span class="p">,</span> <span class="s2">&quot;--delete&quot;</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="s2">&quot;hub&quot;</span><span class="p">][</span><span class="s2">&quot;updater_branch&quot;</span><span class="p">]</span>
         <span class="p">)</span>
     <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
         <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"Remote branch </span><span class="si">{</span><span class="n">conf</span><span class="p">[</span><span class="s1">'hub'</span><span class="p">][</span><span class="s1">'updater_branch'</span><span class="p">]</span><span class="si">}</span><span class="s2"> not found. Continuing on."</span>
+            <span class="sa">f</span><span class="s2">&quot;Remote branch </span><span class="si">{</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;hub&#39;</span><span class="p">][</span><span class="s1">&#39;updater_branch&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> not found. Continuing on.&quot;</span>
         <span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>  <span class="c1"># delete any local updater_branch</span>
         <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_run_command</span><span class="p">(</span>
-            <span class="n">GIT_COMMAND</span><span class="p">,</span> <span class="s2">"branch"</span><span class="p">,</span> <span class="s2">"-D"</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="s2">"hub"</span><span class="p">][</span><span class="s2">"updater_branch"</span><span class="p">]</span>
+            <span class="n">GIT_COMMAND</span><span class="p">,</span> <span class="s2">&quot;branch&quot;</span><span class="p">,</span> <span class="s2">&quot;-D&quot;</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="s2">&quot;hub&quot;</span><span class="p">][</span><span class="s2">&quot;updater_branch&quot;</span><span class="p">]</span>
         <span class="p">)</span>
     <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
         <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"Local branch </span><span class="si">{</span><span class="n">conf</span><span class="p">[</span><span class="s1">'hub'</span><span class="p">][</span><span class="s1">'updater_branch'</span><span class="p">]</span><span class="si">}</span><span class="s2"> not found. Continuing on."</span>
+            <span class="sa">f</span><span class="s2">&quot;Local branch </span><span class="si">{</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;hub&#39;</span><span class="p">][</span><span class="s1">&#39;updater_branch&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> not found. Continuing on.&quot;</span>
         <span class="p">)</span>
 
-    <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_run_command</span><span class="p">(</span><span class="n">GIT_COMMAND</span><span class="p">,</span> <span class="s2">"clean"</span><span class="p">,</span> <span class="s2">"-fd"</span><span class="p">)</span>
+    <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_run_command</span><span class="p">(</span><span class="n">GIT_COMMAND</span><span class="p">,</span> <span class="s2">&quot;clean&quot;</span><span class="p">,</span> <span class="s2">&quot;-fd&quot;</span><span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_run_command</span><span class="p">(</span>
             <span class="n">GIT_COMMAND</span><span class="p">,</span>
-            <span class="s2">"checkout"</span><span class="p">,</span>
-            <span class="s2">"-b"</span><span class="p">,</span>
-            <span class="n">conf</span><span class="p">[</span><span class="s2">"hub"</span><span class="p">][</span><span class="s2">"updater_branch"</span><span class="p">],</span>
-            <span class="n">conf</span><span class="p">[</span><span class="s2">"hub"</span><span class="p">][</span><span class="s2">"pr_to_branch"</span><span class="p">],</span>
+            <span class="s2">&quot;checkout&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-b&quot;</span><span class="p">,</span>
+            <span class="n">conf</span><span class="p">[</span><span class="s2">&quot;hub&quot;</span><span class="p">][</span><span class="s2">&quot;updater_branch&quot;</span><span class="p">],</span>
+            <span class="n">conf</span><span class="p">[</span><span class="s2">&quot;hub&quot;</span><span class="p">][</span><span class="s2">&quot;pr_to_branch&quot;</span><span class="p">],</span>
         <span class="p">)</span>
     <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
         <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_run_command</span><span class="p">(</span>
             <span class="n">GIT_COMMAND</span><span class="p">,</span>
-            <span class="s2">"checkout"</span><span class="p">,</span>
-            <span class="s2">"-b"</span><span class="p">,</span>
-            <span class="n">conf</span><span class="p">[</span><span class="s2">"hub"</span><span class="p">][</span><span class="s2">"updater_branch"</span><span class="p">],</span>
+            <span class="s2">&quot;checkout&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-b&quot;</span><span class="p">,</span>
+            <span class="n">conf</span><span class="p">[</span><span class="s2">&quot;hub&quot;</span><span class="p">][</span><span class="s2">&quot;updater_branch&quot;</span><span class="p">],</span>
         <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="push_branch"><a class="viewcode-back" href="../../api/edgetest_hub.html#edgetest_hub.plugin.push_branch">[docs]</a><span class="k">def</span> <span class="nf">push_branch</span><span class="p">(</span><span class="n">conf</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
-    <span class="sd">"""Push the branch and submit a PR with hub.</span>
+    <span class="sd">&quot;&quot;&quot;Push the branch and submit a PR with hub.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -299,103 +301,141 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    None</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_run_command</span><span class="p">(</span><span class="n">GIT_COMMAND</span><span class="p">,</span> <span class="s2">"diff-index"</span><span class="p">,</span> <span class="s2">"--quiet"</span><span class="p">,</span> <span class="s2">"HEAD"</span><span class="p">)</span>
-        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"No changes detected. No pull request opened."</span><span class="p">)</span>
+        <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_run_command</span><span class="p">(</span><span class="n">GIT_COMMAND</span><span class="p">,</span> <span class="s2">&quot;diff-index&quot;</span><span class="p">,</span> <span class="s2">&quot;--quiet&quot;</span><span class="p">,</span> <span class="s2">&quot;HEAD&quot;</span><span class="p">)</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No changes detected. No pull request opened.&quot;</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
         <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_run_command</span><span class="p">(</span>
             <span class="n">GIT_COMMAND</span><span class="p">,</span>
-            <span class="s2">"add"</span><span class="p">,</span>
-            <span class="s2">"setup.cfg"</span><span class="p">,</span>
-            <span class="s2">"requirements.txt"</span><span class="p">,</span>
+            <span class="s2">&quot;add&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;setup.cfg&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;requirements.txt&quot;</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Adding setup.cfg and requirements.txt"</span><span class="p">)</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Adding setup.cfg and requirements.txt&quot;</span><span class="p">)</span>
 
-        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"PRE_COMMIT_ALLOW_NO_CONFIG"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"1"</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;PRE_COMMIT_ALLOW_NO_CONFIG&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
         <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_run_command</span><span class="p">(</span>
             <span class="n">GIT_COMMAND</span><span class="p">,</span>
-            <span class="s2">"commit"</span><span class="p">,</span>
-            <span class="s2">"-m"</span><span class="p">,</span>
-            <span class="s2">"environmentally friendly"</span><span class="p">,</span>
+            <span class="s2">&quot;commit&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-m&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;environmentally friendly&quot;</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Committing changes."</span><span class="p">)</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Committing changes.&quot;</span><span class="p">)</span>
 
         <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_run_command</span><span class="p">(</span>
             <span class="n">GIT_COMMAND</span><span class="p">,</span>
-            <span class="s2">"push"</span><span class="p">,</span>
-            <span class="s2">"origin"</span><span class="p">,</span>
-            <span class="n">conf</span><span class="p">[</span><span class="s2">"hub"</span><span class="p">][</span><span class="s2">"updater_branch"</span><span class="p">],</span>
+            <span class="s2">&quot;push&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;origin&quot;</span><span class="p">,</span>
+            <span class="n">conf</span><span class="p">[</span><span class="s2">&quot;hub&quot;</span><span class="p">][</span><span class="s2">&quot;updater_branch&quot;</span><span class="p">],</span>
         <span class="p">)</span>
-        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Pushing changes to remote."</span><span class="p">)</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Pushing changes to remote.&quot;</span><span class="p">)</span>
 
         <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_run_command</span><span class="p">(</span>
             <span class="n">HUB_COMMAND</span><span class="p">,</span>
-            <span class="s2">"pull-request"</span><span class="p">,</span>
-            <span class="s2">"-b"</span><span class="p">,</span>
-            <span class="n">conf</span><span class="p">[</span><span class="s2">"hub"</span><span class="p">][</span><span class="s2">"pr_to_branch"</span><span class="p">],</span>
-            <span class="s2">"-m"</span><span class="p">,</span>
-            <span class="sa">f</span><span class="s2">"[EDGETEST] Updating </span><span class="si">{</span><span class="n">conf</span><span class="p">[</span><span class="s1">'hub'</span><span class="p">][</span><span class="s1">'git_repo_name'</span><span class="p">]</span><span class="si">}</span><span class="s2"> dependency versions"</span><span class="p">,</span>
-            <span class="s2">"-r"</span><span class="p">,</span>
-            <span class="n">conf</span><span class="p">[</span><span class="s2">"hub"</span><span class="p">][</span><span class="s2">"pr_reviewers"</span><span class="p">],</span>
-            <span class="s2">"--push"</span><span class="p">,</span>
+            <span class="s2">&quot;pull-request&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-b&quot;</span><span class="p">,</span>
+            <span class="n">conf</span><span class="p">[</span><span class="s2">&quot;hub&quot;</span><span class="p">][</span><span class="s2">&quot;pr_to_branch&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;-m&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;[EDGETEST] Updating </span><span class="si">{</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;hub&#39;</span><span class="p">][</span><span class="s1">&#39;git_repo_name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> dependency versions&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-r&quot;</span><span class="p">,</span>
+            <span class="n">conf</span><span class="p">[</span><span class="s2">&quot;hub&quot;</span><span class="p">][</span><span class="s2">&quot;pr_reviewers&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;--push&quot;</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Submitting PR."</span><span class="p">)</span></div>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Submitting PR.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="create_issue"><a class="viewcode-back" href="../../api/edgetest_hub.html#edgetest_hub.plugin.create_issue">[docs]</a><span class="k">def</span> <span class="nf">create_issue</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create an issue with Hub.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    message: str</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_run_command</span><span class="p">(</span>
+            <span class="n">HUB_COMMAND</span><span class="p">,</span>
+            <span class="s2">&quot;issue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;create&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;--message&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;[EDGETEST] Issue updating dependencies&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;--message&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Edgetest ran, but there were some issues with the tests passing. Edgetest created an issue to let you know.&quot;</span><span class="p">,</span>  <span class="c1"># noqa: E501</span>
+            <span class="s2">&quot;--message&quot;</span><span class="p">,</span>
+            <span class="n">message</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Creating issue.&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;There was a problem creating an Issue.&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="addoption"><a class="viewcode-back" href="../../api/edgetest_hub.html#edgetest_hub.plugin.addoption">[docs]</a><span class="nd">@hookimpl</span>
 <span class="k">def</span> <span class="nf">addoption</span><span class="p">(</span><span class="n">schema</span><span class="p">:</span> <span class="n">Schema</span><span class="p">):</span>
-    <span class="sd">"""Add an email global configuration option.</span>
+    <span class="sd">&quot;&quot;&quot;Add an email global configuration option.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    schema : Schema</span>
 <span class="sd">        The schema class.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">to_bool</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">]</span>
+
     <span class="n">schema</span><span class="o">.</span><span class="n">add_globaloption</span><span class="p">(</span>
-        <span class="s2">"hub"</span><span class="p">,</span>
+        <span class="s2">&quot;hub&quot;</span><span class="p">,</span>
         <span class="p">{</span>
-            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"dict"</span><span class="p">,</span>
-            <span class="s2">"schema"</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">"git_url"</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
-                    <span class="s2">"coerce"</span><span class="p">:</span> <span class="s2">"strip"</span><span class="p">,</span>
-                    <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"github.com"</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;dict&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;schema&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;git_url&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;coerce&quot;</span><span class="p">:</span> <span class="s2">&quot;strip&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;github.com&quot;</span><span class="p">,</span>
                 <span class="p">},</span>
-                <span class="s2">"git_repo_org"</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
-                    <span class="s2">"coerce"</span><span class="p">:</span> <span class="s2">"strip"</span><span class="p">,</span>
-                    <span class="s2">"required"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;git_repo_org&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;coerce&quot;</span><span class="p">:</span> <span class="s2">&quot;strip&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
                 <span class="p">},</span>
-                <span class="s2">"git_repo_name"</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
-                    <span class="s2">"coerce"</span><span class="p">:</span> <span class="s2">"strip"</span><span class="p">,</span>
-                    <span class="s2">"required"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;git_repo_name&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;coerce&quot;</span><span class="p">:</span> <span class="s2">&quot;strip&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
                 <span class="p">},</span>
-                <span class="s2">"git_username"</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
-                    <span class="s2">"coerce"</span><span class="p">:</span> <span class="s2">"strip"</span><span class="p">,</span>
-                    <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"Jenkins"</span><span class="p">,</span>
+                <span class="s2">&quot;git_username&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;coerce&quot;</span><span class="p">:</span> <span class="s2">&quot;strip&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;Jenkins&quot;</span><span class="p">,</span>
                 <span class="p">},</span>
-                <span class="s2">"git_useremail"</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
-                    <span class="s2">"coerce"</span><span class="p">:</span> <span class="s2">"strip"</span><span class="p">,</span>
-                    <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"noreply@capitalone.com"</span><span class="p">,</span>
+                <span class="s2">&quot;git_useremail&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;coerce&quot;</span><span class="p">:</span> <span class="s2">&quot;strip&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;noreply@capitalone.com&quot;</span><span class="p">,</span>
                 <span class="p">},</span>
-                <span class="s2">"updater_branch"</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
-                    <span class="s2">"coerce"</span><span class="p">:</span> <span class="s2">"strip"</span><span class="p">,</span>
-                    <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"dep-updates"</span><span class="p">,</span>
+                <span class="s2">&quot;updater_branch&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;coerce&quot;</span><span class="p">:</span> <span class="s2">&quot;strip&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;dep-updates&quot;</span><span class="p">,</span>
                 <span class="p">},</span>
-                <span class="s2">"pr_to_branch"</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
-                    <span class="s2">"coerce"</span><span class="p">:</span> <span class="s2">"strip"</span><span class="p">,</span>
-                    <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"develop"</span><span class="p">,</span>
+                <span class="s2">&quot;pr_to_branch&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;coerce&quot;</span><span class="p">:</span> <span class="s2">&quot;strip&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;develop&quot;</span><span class="p">,</span>
                 <span class="p">},</span>
-                <span class="s2">"pr_reviewers"</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
-                    <span class="s2">"coerce"</span><span class="p">:</span> <span class="s2">"strip"</span><span class="p">,</span>
-                    <span class="s2">"required"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;pr_reviewers&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;coerce&quot;</span><span class="p">:</span> <span class="s2">&quot;strip&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;open_issue_on_fail&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;coerce&quot;</span><span class="p">:</span> <span class="n">to_bool</span><span class="p">,</span>
+                    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
                 <span class="p">},</span>
             <span class="p">},</span>
         <span class="p">},</span>
@@ -404,15 +444,23 @@
 
 <div class="viewcode-block" id="post_run_hook"><a class="viewcode-back" href="../../api/edgetest_hub.html#edgetest_hub.plugin.post_run_hook">[docs]</a><span class="nd">@hookimpl</span>
 <span class="k">def</span> <span class="nf">post_run_hook</span><span class="p">(</span><span class="n">testers</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">conf</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
-    <span class="sd">"""Invoke hub after the testing is complete."""</span>
-    <span class="k">if</span> <span class="p">(</span>
-        <span class="n">testers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">status</span> <span class="ow">and</span> <span class="n">GIT_TOKEN_ENVNAME</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span>
-    <span class="p">):</span>  <span class="c1"># skip is token not available</span>
-        <span class="k">if</span> <span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"hub"</span><span class="p">):</span>
-            <span class="n">configure_branch</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
-            <span class="n">push_branch</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;Invoke hub after the testing is complete.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">GIT_TOKEN_ENVNAME</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">testers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">status</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hub&quot;</span><span class="p">):</span>
+                <span class="n">configure_branch</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+                <span class="n">push_branch</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># testers[-1].status is False</span>
+            <span class="k">if</span> <span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hub&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">conf</span><span class="p">[</span><span class="s2">&quot;hub&quot;</span><span class="p">][</span><span class="s2">&quot;open_issue_on_fail&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">report</span> <span class="o">=</span> <span class="n">gen_report</span><span class="p">(</span><span class="n">testers</span><span class="p">,</span> <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;github&quot;</span><span class="p">)</span>
+                    <span class="n">create_issue</span><span class="p">(</span><span class="n">report</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Skipping Creating an Issue.&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Hub plugin configuration not found. Skipping Hub plugin&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Environment variable GITHUB_TOKEN not found. Skipping Hub plugin."</span><span class="p">)</span></div>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Environment variable GITHUB_TOKEN not found. Skipping Hub plugin.&quot;</span><span class="p">)</span></div>
 </pre></div>
         </article>
       </div>
@@ -450,6 +498,7 @@
 </div><script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/scripts/furo.js"></script>
     <script src="../../_static/clipboard.min.js"></script>
