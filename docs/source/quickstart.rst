@@ -37,6 +37,7 @@ to your configuration:
     updater_branch = dep-updates  # optional
     pr_to_branch = develop  # optional
     pr_reviewers = fdosani  # comma seperated github ids
+    open_issue_on_fail = True  # True or False if you want an issue to be created when tests fail
 
 - ensure you have an environment variable ``GITHUB_TOKEN`` set. This token should have permissions to interact with the
   GitHub repo in question.
