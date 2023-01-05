@@ -25,7 +25,7 @@ copyright = "2021, Capital One"
 author = "Faisal Dosani"
 
 # The short X.Y version
-version = "2022.6.0"
+version = "2022.12.0"
 # The full version, including alpha/beta/rc tags
 release = ""
 

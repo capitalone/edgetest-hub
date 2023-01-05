@@ -79,7 +79,7 @@ TABLE_OUTPUT = """
 def test_addoption(config, tmpdir):
     """Test the addoption hook."""
     location = tmpdir.mkdir("mylocation")
-    conf_loc = Path(str(location), "myconfig.ini")
+    conf_loc = Path(str(location), "myconfig.cfg")
     with open(conf_loc, "w") as outfile:
         outfile.write(config)
 
