@@ -1,7 +1,9 @@
 # Edgetest hub plugin
 
-![python-3.7](https://img.shields.io/badge/python-3.7-green.svg)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/edgetest-hub)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
+[![PyPI version](https://badge.fury.io/py/edgetest-hub.svg)](https://badge.fury.io/py/edgetest-hub)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/edgetest-hub/badges/version.svg)](https://anaconda.org/conda-forge/edgetest-hub)
 
 [Full Documentation](https://capitalone.github.io/edgetest-hub/)
 
