@@ -66,11 +66,11 @@ PIP_LIST = """
 
 TABLE_OUTPUT = """
 
-============= =============== =================== =================
- Environment   Passing tests   Upgraded packages   Package version
-------------- --------------- ------------------- -----------------
- myenv         True            myupgrade           0.2.0
-============= =============== =================== =================
+=============  ==================  ===============  ===================  ==================  =================
+Environment    Setup successful    Passing tests    Upgraded packages    Lowered packages    Package version
+=============  ==================  ===============  ===================  ==================  =================
+myenv          True                True             myupgrade                                0.2.0
+=============  ==================  ===============  ===================  ==================  =================
 
 """
 
@@ -332,7 +332,7 @@ def test_hub_issue(mock_popen, mock_cpopen, mock_builder, mock_run_command):
             "--message",
             "Edgetest ran, but there were some issues with the tests passing. Edgetest created an issue to let you know.",
             "--message",
-            "| Environment   | Passing tests   | Upgraded packages   | Package version   |\n|---------------|-----------------|---------------------|-------------------|\n| myenv         | False           | myupgrade           | 0.2.0             |",
+            "| Environment   | Setup successful   | Passing tests   | Upgraded packages   | Lowered packages   | Package version   |\n|---------------|--------------------|-----------------|---------------------|--------------------|-------------------|\n| myenv         | True               | False           | myupgrade           |                    | 0.2.0             |",
         )
     ]
     mock_run_command.assert_has_calls(expected_call)
