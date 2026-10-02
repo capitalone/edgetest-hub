@@ -1,0 +1,159 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = [
+    "setuptools>=64",
+]
+
+[project]
+name = "edgetest-hub"
+description = "Edgetest hub plugin"
+readme = "README.md"
+requires-python = ">=3.10.0"
+authors = [
+    { name = "Faisal Dosani", email = "faisal.dosani@capitalone.com" },
+]
+maintainers = [
+    { name = "Faisal Dosani", email = "faisal.dosani@capitalone.com" },
+]
+dynamic = [
+    "version",
+]
+dependencies = [
+    "edgetest>=2022.6.0",
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+urls."Bug Tracker" = "https://github.com/capitalone/edgetest-hub/issues"
+urls."Documentation" = "https://capitalone.github.io/edgetest-hub"
+urls."Source Code" = "https://github.com/capitalone/edgetest-hub"
+
+[project.optional-dependencies]
+docs = [
+    "furo",
+    "sphinx",
+    "sphinx-copybutton",
+]
+tests = [
+    "coverage",
+    "flake8",
+    "mypy",
+    "pydocstyle",
+    "pytest",
+    "pytest-cov",
+]
+qa = [
+    "black",
+    "isort",
+    "pip-tools",
+    "pre-commit",
+    "pylint",
+]
+build = [
+    "build",
+    "twine",
+    "wheel",
+    "bumpver",
+]
+dev = [
+    "coverage",
+    "flake8",
+    "mypy",
+    "pydocstyle",
+    "pytest",
+    "pytest-cov",
+    "furo",
+    "sphinx",
+    "sphinx-copybutton",
+    "black",
+    "isort",
+    "pip-tools",
+    "pre-commit",
+    "pylint",
+    "build",
+    "twine",
+    "wheel",
+    "bumpver",
+]
+
+[project.entry-points.edgetest]
+hub = "edgetest_hub.plugin"
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false
+
+[tool.setuptools.packages.find]
+include = ["edgetest_hub*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "edgetest_hub.__version__" }
+
+[tool.edgetest]
+
+[[tool.edgetest.env]]
+name = "core"
+python_version = "3.10"
+upgrade = [
+    "edgetest",
+]
+extras = [
+    "tests",
+]
+deps = [
+    "pip-tools",
+]
+
+[tool.bumpver]
+current_version = "2023.8.0"
+version_pattern = "YYYY.MM.INC0"
+commit_message = "Bump {old_version} to {new_version}"
+commit = true
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = [
+    'current_version = "{version}"',
+]
+"docs/source/conf.py" = [
+    'version = "{version}"',
+]
+"edgetest_hub/__init__.py" = [
+    '__version__ = "{version}"',
+]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+allow_redefinition = true
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 88
+
+[tool.pytest.ini_options]
+markers = [
+    "unit: mark unit tests that do not require external interfaces and use mocking",
+    "integration: mark test that interact with an external system",
+]
+addopts = "--verbose"
+
+# NOTE: [pylint] from setup.cfg (pylint_minimum_score = 9.5) is NOT migrated here.
+# pylint reads pyproject.toml only under [tool.pylint...] with a different key
+# layout (e.g. [tool.pylint.MASTER] fail-under = 9.5); the old setup.cfg key did
+# not map cleanly and `make lint`/aliases were setup.cfg-only, so it was dropped
+# with this note rather than mistranslated.

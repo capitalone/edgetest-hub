@@ -8,56 +8,55 @@ import pytest
 from click.testing import CliRunner
 from edgetest.interface import cli
 from edgetest.schema import EdgetestValidator, Schema
-from edgetest.utils import parse_cfg
+from edgetest.utils import parse_toml
 
 from edgetest_hub.plugin import addoption, create_issue
 
 CFG = """
-[edgetest.envs.myenv]
-upgrade =
-    myupgrade
-command =
-    pytest tests -m 'not integration'
+[[tool.edgetest.env]]
+name = "myenv"
+upgrade = [ "myupgrade" ]
+command = "pytest tests -m 'not integration'"
 """
 
 CFG_HUB_ISSUE_TRUE = """
-[edgetest.hub]
-git_repo_org = test-org
-git_repo_name = test-repo
-pr_reviewers = abc123,efg456
-open_issue_on_fail = True
-[edgetest.envs.myenv]
-upgrade =
-    myupgrade
-command =
-    pytest tests -m 'not integration'
+[tool.edgetest.hub]
+git_repo_org = "test-org"
+git_repo_name = "test-repo"
+pr_reviewers = "abc123,efg456"
+open_issue_on_fail = "True"
+
+[[tool.edgetest.env]]
+name = "myenv"
+upgrade = [ "myupgrade" ]
+command = "pytest tests -m 'not integration'"
 """
 
 CFG_HUB_ISSUE_FALSE = """
-[edgetest.hub]
-git_repo_org = test-org
-git_repo_name = test-repo
-pr_reviewers = abc123,efg456
-open_issue_on_fail = False
-[edgetest.envs.myenv]
-upgrade =
-    myupgrade
-command =
-    pytest tests -m 'not integration'
+[tool.edgetest.hub]
+git_repo_org = "test-org"
+git_repo_name = "test-repo"
+pr_reviewers = "abc123,efg456"
+open_issue_on_fail = "False"
+
+[[tool.edgetest.env]]
+name = "myenv"
+upgrade = [ "myupgrade" ]
+command = "pytest tests -m 'not integration'"
 """
 
 CFG_HUB_URL = """
-[edgetest.hub]
-git_url = mycustomgit.com
-git_repo_org = test-org
-git_repo_name = test-repo
-pr_reviewers = abc123,efg456
-open_issue_on_fail = True
-[edgetest.envs.myenv]
-upgrade =
-    myupgrade
-command =
-    pytest tests -m 'not integration'
+[tool.edgetest.hub]
+git_url = "mycustomgit.com"
+git_repo_org = "test-org"
+git_repo_name = "test-repo"
+pr_reviewers = "abc123,efg456"
+open_issue_on_fail = "True"
+
+[[tool.edgetest.env]]
+name = "myenv"
+upgrade = [ "myupgrade" ]
+command = "pytest tests -m 'not integration'"
 """
 
 PIP_LIST = """
@@ -66,11 +65,11 @@ PIP_LIST = """
 
 TABLE_OUTPUT = """
 
-============= =============== =================== =================
- Environment   Passing tests   Upgraded packages   Package version
-------------- --------------- ------------------- -----------------
- myenv         True            myupgrade           0.2.0
-============= =============== =================== =================
+=============  ==================  ===============  ===================  ==================  =================
+Environment    Setup successful    Passing tests    Upgraded packages    Lowered packages    Package version
+=============  ==================  ===============  ===================  ==================  =================
+myenv          True                True             myupgrade                                0.2.0
+=============  ==================  ===============  ===================  ==================  =================
 
 """
 
@@ -79,24 +78,23 @@ TABLE_OUTPUT = """
 def test_addoption(config, tmpdir):
     """Test the addoption hook."""
     location = tmpdir.mkdir("mylocation")
-    conf_loc = Path(str(location), "myconfig.cfg")
+    conf_loc = Path(str(location), "myconfig.toml")
     with open(conf_loc, "w") as outfile:
         outfile.write(config)
 
     schema = Schema()
     addoption(schema=schema)
 
-    cfg = parse_cfg(filename=conf_loc)
+    cfg = parse_toml(filename=str(conf_loc))
     validator = EdgetestValidator(schema=schema.schema)
 
     assert validator.validate(cfg)
 
 
 @patch("edgetest_hub.plugin._run_command", autospec=True)
-@patch("edgetest.lib.EnvBuilder", autospec=True)
 @patch("edgetest.core.Popen", autospec=True)
 @patch("edgetest.utils.Popen", autospec=True)
-def test_hub_notoken(mock_popen, mock_cpopen, mock_builder, mock_run_command):
+def test_hub_notoken(mock_popen, mock_cpopen, mock_run_command):
     """Test hub and git in setting up PR of changes."""
     mock_popen.return_value.communicate.return_value = (PIP_LIST, "error")
     type(mock_popen.return_value).returncode = PropertyMock(return_value=0)
@@ -106,10 +104,10 @@ def test_hub_notoken(mock_popen, mock_cpopen, mock_builder, mock_run_command):
     runner = CliRunner()
 
     with runner.isolated_filesystem() as loc:
-        with open("setup.cfg", "w") as outfile:
+        with open("pyproject.toml", "w") as outfile:
             outfile.write(CFG_HUB_ISSUE_TRUE)
 
-        result = runner.invoke(cli, ["--config=setup.cfg"])
+        result = runner.invoke(cli, ["--config=pyproject.toml"])
 
     assert result.exit_code == 0
     assert mock_run_command.called is False
@@ -117,10 +115,9 @@ def test_hub_notoken(mock_popen, mock_cpopen, mock_builder, mock_run_command):
 
 @patch.dict(os.environ, {"GITHUB_TOKEN": "abcd1234"})
 @patch("edgetest_hub.plugin._run_command", autospec=True)
-@patch("edgetest.lib.EnvBuilder", autospec=True)
 @patch("edgetest.core.Popen", autospec=True)
 @patch("edgetest.utils.Popen", autospec=True)
-def test_hub_withtoken_nopr(mock_popen, mock_cpopen, mock_builder, mock_run_command):
+def test_hub_withtoken_nopr(mock_popen, mock_cpopen, mock_run_command):
     """Test hub and git in setting up PR of changes."""
     mock_popen.return_value.communicate.return_value = (PIP_LIST, "error")
     type(mock_popen.return_value).returncode = PropertyMock(return_value=0)
@@ -163,10 +160,10 @@ def test_hub_withtoken_nopr(mock_popen, mock_cpopen, mock_builder, mock_run_comm
     runner = CliRunner()
 
     with runner.isolated_filesystem() as loc:
-        with open("setup.cfg", "w") as outfile:
+        with open("pyproject.toml", "w") as outfile:
             outfile.write(CFG_HUB_ISSUE_TRUE)
 
-        result = runner.invoke(cli, ["--config=setup.cfg"])
+        result = runner.invoke(cli, ["--config=pyproject.toml"])
 
     assert mock_run_command.called is True
     assert mock_run_command.mock_calls == expected_calls_no_pr
@@ -174,10 +171,9 @@ def test_hub_withtoken_nopr(mock_popen, mock_cpopen, mock_builder, mock_run_comm
 
 @patch.dict(os.environ, {"GITHUB_TOKEN": "abcd1234"})
 @patch("edgetest_hub.plugin._run_command", autospec=True)
-@patch("edgetest.lib.EnvBuilder", autospec=True)
 @patch("edgetest.core.Popen", autospec=True)
 @patch("edgetest.utils.Popen", autospec=True)
-def test_hub_withtoken_withpr(mock_popen, mock_cpopen, mock_builder, mock_run_command):
+def test_hub_withtoken_withpr(mock_popen, mock_cpopen, mock_run_command):
     """Test hub and git in setting up PR of changes."""
     mock_popen.return_value.communicate.return_value = (PIP_LIST, "error")
     type(mock_popen.return_value).returncode = PropertyMock(return_value=0)
@@ -217,7 +213,7 @@ def test_hub_withtoken_withpr(mock_popen, mock_cpopen, mock_builder, mock_run_co
         call("git", "clean", "-fd"),
         call("git", "checkout", "-b", "dep-updates", "develop"),
         call("git", "diff-index", "--quiet", "HEAD"),
-        call("git", "add", "setup.cfg", "requirements.txt"),
+        call("git", "add", "pyproject.toml", "requirements.txt"),
         call("git", "commit", "-m", "environmentally friendly"),
         call("git", "push", "origin", "dep-updates"),
         call(
@@ -236,10 +232,10 @@ def test_hub_withtoken_withpr(mock_popen, mock_cpopen, mock_builder, mock_run_co
     runner = CliRunner()
 
     with runner.isolated_filesystem() as loc:
-        with open("setup.cfg", "w") as outfile:
+        with open("pyproject.toml", "w") as outfile:
             outfile.write(CFG_HUB_ISSUE_TRUE)
 
-        result = runner.invoke(cli, ["--config=setup.cfg"])
+        result = runner.invoke(cli, ["--config=pyproject.toml"])
 
     assert mock_run_command.called is True
     assert mock_run_command.mock_calls == expected_calls_with_pr
@@ -247,10 +243,9 @@ def test_hub_withtoken_withpr(mock_popen, mock_cpopen, mock_builder, mock_run_co
 
 @patch.dict(os.environ, {"GITHUB_TOKEN": "abcd1234"})
 @patch("edgetest_hub.plugin._run_command", autospec=True)
-@patch("edgetest.lib.EnvBuilder", autospec=True)
 @patch("edgetest.core.Popen", autospec=True)
 @patch("edgetest.utils.Popen", autospec=True)
-def test_hub_custom_url(mock_popen, mock_cpopen, mock_builder, mock_run_command):
+def test_hub_custom_url(mock_popen, mock_cpopen, mock_run_command):
     """Test hub and git in setting up PR of changes."""
     mock_popen.return_value.communicate.return_value = (PIP_LIST, "error")
     type(mock_popen.return_value).returncode = PropertyMock(return_value=0)
@@ -293,10 +288,10 @@ def test_hub_custom_url(mock_popen, mock_cpopen, mock_builder, mock_run_command)
     runner = CliRunner()
 
     with runner.isolated_filesystem() as loc:
-        with open("setup.cfg", "w") as outfile:
+        with open("pyproject.toml", "w") as outfile:
             outfile.write(CFG_HUB_URL)
 
-        result = runner.invoke(cli, ["--config=setup.cfg"])
+        result = runner.invoke(cli, ["--config=pyproject.toml"])
 
     assert mock_run_command.called is True
     assert mock_run_command.mock_calls == expected_calls_no_pr
@@ -304,10 +299,9 @@ def test_hub_custom_url(mock_popen, mock_cpopen, mock_builder, mock_run_command)
 
 @patch.dict(os.environ, {"GITHUB_TOKEN": "abcd1234"})
 @patch("edgetest_hub.plugin._run_command", autospec=True)
-@patch("edgetest.lib.EnvBuilder", autospec=True)
 @patch("edgetest.core.Popen", autospec=True)
 @patch("edgetest.utils.Popen", autospec=True)
-def test_hub_issue(mock_popen, mock_cpopen, mock_builder, mock_run_command):
+def test_hub_issue(mock_popen, mock_cpopen, mock_run_command):
     """Test hub and opening of issue."""
     mock_popen.return_value.communicate.return_value = (PIP_LIST, "error")
     type(mock_popen.return_value).returncode = PropertyMock(return_value=0)
@@ -317,10 +311,10 @@ def test_hub_issue(mock_popen, mock_cpopen, mock_builder, mock_run_command):
     runner = CliRunner()
 
     with runner.isolated_filesystem() as loc:
-        with open("setup.cfg", "w") as outfile:
+        with open("pyproject.toml", "w") as outfile:
             outfile.write(CFG_HUB_ISSUE_TRUE)
 
-        result = runner.invoke(cli, ["--config=setup.cfg", "--notest"])
+        result = runner.invoke(cli, ["--config=pyproject.toml", "--notest"])
 
     expected_call = [
         call(
@@ -332,7 +326,7 @@ def test_hub_issue(mock_popen, mock_cpopen, mock_builder, mock_run_command):
             "--message",
             "Edgetest ran, but there were some issues with the tests passing. Edgetest created an issue to let you know.",
             "--message",
-            "| Environment   | Passing tests   | Upgraded packages   | Package version   |\n|---------------|-----------------|---------------------|-------------------|\n| myenv         | False           | myupgrade           | 0.2.0             |",
+            "| Environment   | Setup successful   | Passing tests   | Upgraded packages   | Lowered packages   | Package version   |\n|---------------|--------------------|-----------------|---------------------|--------------------|-------------------|\n| myenv         | True               | False           | myupgrade           |                    | 0.2.0             |",
         )
     ]
     mock_run_command.assert_has_calls(expected_call)
@@ -340,10 +334,9 @@ def test_hub_issue(mock_popen, mock_cpopen, mock_builder, mock_run_command):
 
 @patch.dict(os.environ, {"GITHUB_TOKEN": "abcd1234"})
 @patch("edgetest_hub.plugin._run_command", autospec=True)
-@patch("edgetest.lib.EnvBuilder", autospec=True)
 @patch("edgetest.core.Popen", autospec=True)
 @patch("edgetest.utils.Popen", autospec=True)
-def test_hub_issue_false(mock_popen, mock_cpopen, mock_builder, mock_run_command):
+def test_hub_issue_false(mock_popen, mock_cpopen, mock_run_command):
     """Test hub and opening of issue when the flag is False"""
     mock_popen.return_value.communicate.return_value = (PIP_LIST, "error")
     type(mock_popen.return_value).returncode = PropertyMock(return_value=0)
@@ -353,10 +346,10 @@ def test_hub_issue_false(mock_popen, mock_cpopen, mock_builder, mock_run_command
     runner = CliRunner()
 
     with runner.isolated_filesystem() as loc:
-        with open("setup.cfg", "w") as outfile:
+        with open("pyproject.toml", "w") as outfile:
             outfile.write(CFG_HUB_ISSUE_FALSE)
 
-        result = runner.invoke(cli, ["--config=setup.cfg", "--notest"])
+        result = runner.invoke(cli, ["--config=pyproject.toml", "--notest"])
 
     mock_run_command.assert_not_called()
 

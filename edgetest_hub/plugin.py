@@ -106,10 +106,10 @@ def push_branch(conf: Dict):
         out, _ = _run_command(
             GIT_COMMAND,
             "add",
-            "setup.cfg",
+            "pyproject.toml",
             "requirements.txt",
         )
-        LOG.info("Adding setup.cfg and requirements.txt")
+        LOG.info("Adding pyproject.toml and requirements.txt")
 
         os.environ["PRE_COMMIT_ALLOW_NO_CONFIG"] = "1"
         out, _ = _run_command(
