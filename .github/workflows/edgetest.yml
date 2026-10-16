@@ -5,10 +5,14 @@ name: Run edgetest
 on:
   schedule:
     - cron: '35 17 * * 5'
+  workflow_dispatch:
 jobs:
   edgetest:
     runs-on: ubuntu-latest
     name: running edgetest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # pin@v7.0.1
         with:
