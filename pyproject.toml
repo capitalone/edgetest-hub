@@ -18,9 +18,7 @@ maintainers = [
 dynamic = [
     "version",
 ]
-dependencies = [
-    "edgetest>=2022.6.0",
-]
+dependencies = ["edgetest>=2022.6.0"]
 classifiers = [
     "Intended Audience :: Developers",
     "Natural Language :: English",
@@ -39,52 +37,11 @@ urls."Documentation" = "https://capitalone.github.io/edgetest-hub"
 urls."Source Code" = "https://github.com/capitalone/edgetest-hub"
 
 [project.optional-dependencies]
-docs = [
-    "furo",
-    "sphinx",
-    "sphinx-copybutton",
-]
-tests = [
-    "coverage",
-    "flake8",
-    "mypy",
-    "pydocstyle",
-    "pytest",
-    "pytest-cov",
-]
-qa = [
-    "black",
-    "isort",
-    "pip-tools",
-    "pre-commit",
-    "pylint",
-]
-build = [
-    "build",
-    "twine",
-    "wheel",
-    "bumpver",
-]
-dev = [
-    "coverage",
-    "flake8",
-    "mypy",
-    "pydocstyle",
-    "pytest",
-    "pytest-cov",
-    "furo",
-    "sphinx",
-    "sphinx-copybutton",
-    "black",
-    "isort",
-    "pip-tools",
-    "pre-commit",
-    "pylint",
-    "build",
-    "twine",
-    "wheel",
-    "bumpver",
-]
+docs = ["furo", "sphinx", "sphinx-copybutton"]
+tests = ["coverage", "flake8", "mypy", "pydocstyle", "pytest", "pytest-cov"]
+qa = ["black", "isort", "pip-tools", "pre-commit", "pylint"]
+build = ["build", "twine", "wheel", "bumpver"]
+dev = ["coverage", "flake8", "mypy", "pydocstyle", "pytest", "pytest-cov", "furo", "sphinx", "sphinx-copybutton", "black", "isort", "pip-tools", "pre-commit", "pylint", "build", "twine", "wheel", "bumpver"]
 
 [project.entry-points.edgetest]
 hub = "edgetest_hub.plugin"
