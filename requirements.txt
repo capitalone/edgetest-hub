@@ -20,5 +20,5 @@ tomli==2.5.0
     # via toml-fmt-common
 tomlkit==0.15.0
     # via edgetest
-uv==0.11.16
+uv==0.13.4
     # via edgetest
