@@ -49,4 +49,4 @@ That's it! the plugin will automatically be called after the tests finish.
 - It will check for ``GITHUB_TOKEN`` before continuing.
 - The first step configures ``git`` and the ``updater_branch``.
   - will delete the ``updater_branch`` if it exists remotely or locally.
-- Then commits ``setup.cfg`` and ``requirements.txt`` and submits a PR for review.
+- Then commits ``pyproject.toml`` and ``requirements.txt`` and submits a PR for review.
